@@ -6,7 +6,6 @@ from astropy import coordinates as coor
 from astropy.constants import c,h, k_B, G, M_sun, au
 import os.path
 import pyfits as pyfits
-from cvs.cvsstats import lm
 from scipy.signal import savgol_filter
 from scipy import interpolate
 import pandas as pd
@@ -368,8 +367,9 @@ noerror=False):
       lspec=spec[w2]
       lwave=wave[w2]
 
-      out=lm(lwave,lspec,doplot=False,doprint=False)      
-      yfit=out['yfit']
+      z=np.polyfit(lwave, lspec, 1)
+      p=np.poly1d(z)
+      yfit=p(lwave)
       sd=np.std(lspec-yfit)
       win=np.abs(lspec-yfit) < 4.*sd
       sd=np.std((lspec-yfit)[win])
@@ -438,16 +438,18 @@ noerror=False):
         myw=(w & w2)
         lspec2=spec[myw] 
         lwave=wave[myw]
-        out=lm(lwave, lspec2,doplot=False, doprint=False)
-        yfit2=out['yfit']
+        z=np.polyfit(lwave, lspec2, 1)
+        p=np.poly1d(z)
+        yfit2=p(lwave)
         sd2=np.std(lspec2-yfit2)
       else:
         sd2=1000
       if(np.sum(w3) > 0):
         lspec3=spec[w3]
         lwave=wave[w3]
-        out=lm(lwave, lspec3,doplot=False, doprint=False)
-        yfit3=out['yfit']
+        z=np.polyfit(lwave, lspec3, 1)
+        p=np.poly1d(z)
+        yfit3=p(lwave)
         sd3=np.std(lspec3-yfit3)
       else:
         sd3=1000
@@ -557,9 +559,9 @@ def contsub_irs_sh(wave,flux, error=None,silicate=False, ice=False):
 #Compute standard deviation of spectrum in "quiescent" region
     lspec=spec[w2]
     lwave=wave[w2]
-
-    out=lm(lwave,lspec,doplot=False,doprint=False)      
-    yfit=out['yfit']
+    z=np.polyfit(lwave, lspec, 1)
+    p=np.poly1d(z)
+    yfit=p(lwave)
     sd=np.std(lspec-yfit)
     win=np.abs(lspec-yfit) < 4.*sd
     sd=np.std((lspec-yfit)[win])

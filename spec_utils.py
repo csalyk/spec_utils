@@ -12,9 +12,9 @@ import pandas as pd
 import math
 import matplotlib.pyplot as plt
 import pdb
-import hitranmaster.hitran as hitran
 import json
 from numpy.lib.recfunctions import append_fields
+from .helpers import fwhm_to_sigma, sigma_to_fwhm, extract_hitran_data
 
 def make_line_profile(wave, flux, w0, vwidth=50, norm=None,v_dop=0):
     vel=(wave-w0)/w0*c.value*1e-3  #km/s
@@ -62,9 +62,9 @@ def line_overlap_mband(wave, flux, type='12co1-0', dv=3., voffset=0, p_list=[Non
 
 #Get lines from HITRAN and select for appropriate line type
     if((type == '12co1-0' ) | (type == '12co2-1')):
-        hitran_data, __ =hitran.extract_data('CO', 4.5,5.2, eupmax=10000, aupmin=0.005, isot=1)
+        hitran_data=extract_hitran_data('CO',4.4,5.2,isotopologue_number=1, eupmax=10000., aupmin=0.005)
     if((type == '13co1-0' )):
-        hitran_data, __ =hitran.extract_data('CO', 4.5,5.2, eupmax=10000, aupmin=0.005, isot=2)
+        hitran_data=extract_hitran_data('CO',4.4,5.2,isotopologue_number=2, eupmax=10000., aupmin=0.005)
 
     w0=np.array(1e4/hitran_data['linecenter'])
     vup =np.array([json.loads(vp) for vp in hitran_data['Vp']])

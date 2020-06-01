@@ -5,7 +5,7 @@ from astropy.time import Time
 from astropy import coordinates as coor
 from astropy.constants import c,h, k_B, G, M_sun, au
 import os.path
-import pyfits as pyfits
+from astropy.io import fits
 from scipy.signal import savgol_filter
 from scipy import interpolate
 import pandas as pd
@@ -331,7 +331,7 @@ noerror=False):
     if (file_exists_sh==False and both==False):
       return
     if (file_exists_sh):
-      data=pyfits.getdata(shfile,1)   #Read in FITS file for SH data
+      data=fits.getdata(shfile,1)   #Read in FITS file for SH data
       spec=data['SPEC'][0]
       wave=data['WAVE'][0]
       wave=wave[1:]
@@ -408,7 +408,7 @@ noerror=False):
     if(file_exists_lh == False and both == False):
       return
     if(file_exists_lh):
-      data=pyfits.getdata(lhfile,1)
+      data=fits.getdata(lhfile,1)
       spec=np.array(data['SPEC'][0])
       wave=np.array(data['WAVE'][0])
       spec=spec[1:]

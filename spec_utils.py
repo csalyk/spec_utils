@@ -531,7 +531,8 @@ noerror=False):
   flux=orig-spl
 
 #Need to figure out how to deal with NaN's here
-  wbad=(flux < -0.1) | np.isnan(flux)
+#  wbad=(flux < -0.1) | np.isnan(flux)  Used to have this, but not sure it's a good idea
+  wbad=np.isnan(flux)
   if(np.size(wbad) > 0):
     wgood=(flux > -0.1) & (np.isfinite(flux))
     f = interp1d(wave[wgood], flux[wgood], bounds_error=False)

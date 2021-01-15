@@ -16,6 +16,27 @@ import json
 from numpy.lib.recfunctions import append_fields
 from .helpers import fwhm_to_sigma, sigma_to_fwhm, extract_hitran_data
 
+def binspec(wave, flux, n):
+#bin spectrum by # of bins n
+
+#    if(np.remainder(n,2) == 0):
+#        print("Even numbers not accepted by this program")
+#        return 
+
+    new_length=math.floor(np.size(wave)/n)
+    newwave=np.zeros(new_length)
+    newint=np.zeros(new_length)
+
+    for i in np.arange(new_length-2):
+         hw=math.floor(n/2)
+         i_old=i*n+hw
+         newwave[i]=np.mean(wave[i_old-hw:i_old+hw+1])
+         newint[i]=np.sum(flux[i_old-hw:i_old+hw+1])
+
+    mybool=(newint==0)
+    newint[mybool]='NaN'
+    return {'wave':newwave, 'flux':newint/n}
+
 def make_line_profile(wave, flux, w0, vwidth=50, norm=None,v_dop=0):
     vel=(wave-w0)/w0*c.value*1e-3  #km/s
     flux=flux[(vel>(-vwidth)) & (vel<vwidth)]

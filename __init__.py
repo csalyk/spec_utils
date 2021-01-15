@@ -6,6 +6,7 @@ from .spec_utils import read_irs
 from .spec_utils import vproj
 from .spec_utils import vhelio_to_vlsr
 from .spec_utils import vlsr_to_vhelio
+from .spec_utils import binspec
 
 
 

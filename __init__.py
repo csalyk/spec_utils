@@ -7,6 +7,10 @@ from .spec_utils import vproj
 from .spec_utils import vhelio_to_vlsr
 from .spec_utils import vlsr_to_vhelio
 from .spec_utils import binspec
+from .spec_utils import spec_convol
+from .helpers import markgauss
+from .helpers import fwhm_to_sigma
+from .helpers import sigma_to_fwhm
 
 
 

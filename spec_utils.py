@@ -165,13 +165,34 @@ def frexp10(x):
     mantissa=10.**(np.log10(x)-exponent)
     return mantissa, exponent
 
-def spec_convol(wave, flux, dv):
 
-#Program assumes units of dv are km/s, and dv=FWHM
 
-    dv=fwhm_to_sigma(dv)
-    n=round(4.*dv/(c.value*1e-3)*np.median(wave)/(wave[1]-wave[0]))
-    if (n < 10):
+def spec_convol(wave, flux, dv, kernel=None):
+    '''
+    Convolve a spectrum, given wavelength in microns and flux density, by a given FWHM in velocity 
+
+    Parameters
+    ---------
+    wave : numpy array
+        wavelength values, in microns
+    flux : numpy array
+        flux density values, in units of Energy/area/time/Hz
+    dv : float
+        FWHM of Gaussian kernel to use in convolution, in units of km/s
+    kernel : dictionary
+        Dictionary containing 'vel' and 'flux' for convolution kernel
+        If provided, will supersede dv 
+        Will be normalized if not normalized
+
+    Returns
+    --------
+    newflux : numpy array
+        Convolved spectrum flux density values, in same units as input
+    '''
+
+    dv=fwhm_to_sigma(dv)  #Convert FWHM to sigma
+    n=round(4.*dv/(c.value*1e-3)*np.median(wave)/(wave[1]-wave[0]))   #Determine # of elements to use in kernel
+    if (n < 10):  #Set floor of 10 elements
         n=10.
 
 #Pad arrays to deal with edges
@@ -202,9 +223,11 @@ def spec_convol(wave, flux, dv):
         nvel=(np.max(lvel)-np.min(lvel))/(dv*.2) +3
         vel=np.arange(nvel)
         vel=.2*dv*(vel-np.median(vel))
-        kernel=markgauss(vel,mean=0,sigma=dv,area=1.)
-        f = interp1d(vel,kernel, bounds_error=False)
-        wkernel=f(lvel)
+        if(kernel is None):
+            mykernel=markgauss(vel,mean=0,sigma=dv,area=1.)
+            wkernel=np.interp(lvel,vel,mykernel)   #numpy interp is almost factor of 2 faster than interp1d
+        if(kernel is not None):
+            wkernel=np.interp(lvel,kernel['vel'],kernel['flux'])
         wkernel=wkernel/np.nansum(wkernel)
         newflux[np.int(i)]=np.nansum(lflux*wkernel)/np.nansum(wkernel[np.isfinite(lflux)])
         #Note: denominator is necessary to correctly account for NaN'd regions

@@ -87,7 +87,7 @@ def line_overlap_mband(wave, flux, type='12co1-0', dv=3., voffset=0, p_list=[Non
     if((type == '13co1-0' )):
         hitran_data=extract_hitran_data('CO',4.4,5.2,isotopologue_number=2, eupmax=10000., aupmin=0.005)
 
-    w0=np.array(1e4/hitran_data['linecenter'])
+    w0=np.array(1e4/hitran_data['wn'])
     vup =np.array([json.loads(vp) for vp in hitran_data['Vp']])
     vlow =np.array([json.loads(vpp) for vpp in hitran_data['Vpp']])
     Qlow=hitran_data['Qpp']
@@ -109,7 +109,7 @@ def line_overlap_mband(wave, flux, type='12co1-0', dv=3., voffset=0, p_list=[Non
     if(any(p_list) or any(r_list)):
         keep=np.zeros(np.size(Qlow), dtype=bool)
         for i in np.arange(np.size(Qlow)):
-            spl=Qlow.iloc[i].split()
+            spl=Qlow[i].split()
             qtype=spl[0]
             qnum=np.int(spl[1])
             if(any(p_list)):
@@ -118,7 +118,7 @@ def line_overlap_mband(wave, flux, type='12co1-0', dv=3., voffset=0, p_list=[Non
             if(any(r_list)):
                 if((qtype=='R') & (qnum in r_list)):
                     keep[i]=True
-        Qlow=Qlow.iloc[keep]
+        Qlow=Qlow[keep]
         w0=w0[keep]
         vup=vup[keep]
         vlow=vlow[keep]
@@ -148,8 +148,13 @@ def line_overlap_mband(wave, flux, type='12co1-0', dv=3., voffset=0, p_list=[Non
         if(np.size(w) > 0):
             interpind[w,i]=0
             interpflux[w,i]=0
+    numer=np.nansum(interpflux,1)
+    denom=np.nansum(interpind,1)
+    mybool=(denom==0)   #Find regions where there is no data
+    numer[mybool]='NaN' #Set to NaN
+    denom[mybool]=1
+    interpflux=numer/denom
 
-    interpflux=np.sum(interpflux,1)/np.sum(interpind,1)
     if(norm=='Maxmin'):
         interpflux=(interpflux-np.nanmin(interpflux))/np.nanmax(interpflux-np.nanmin(interpflux))
 

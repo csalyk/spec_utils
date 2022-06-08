@@ -403,7 +403,7 @@ def fit_irs_spline(wave, orig, sdfac=None):
 
 
 def read_irs(src_name, orderc=True, shflag=False, lhflag=False, silicate=False, ice=False,
-noerror=False):
+noerror=False,dd='/Users/cosalyk/DATA/Spitzer/All/REDUCED/'):
 
   #Warning: This routine includes hardcoded fixes for some sources
 
@@ -412,7 +412,8 @@ noerror=False):
 
   #Hardcoded directory location
   #Eventually include an error catch here?
-  dd='/Users/csalyk/DATA/Spitzer/All/REDUCED/'
+#  dd='/Users/cosalyk/DATA/Spitzer/All/REDUCED/'
+#  if(dd is not None): dd=datadir
 
   sherrflag=False
 #Read in SH part of spectrum
@@ -597,7 +598,9 @@ noerror=False):
     flux_lh=flux_lh[w]
     cont_lh=cont_lh[w]
     orig_lh=orig_lh[w]
-    error_lh=error_lh[w]
+    if(noerror==False): 
+      error_lh=error_lh[w]
+ 
     wave=np.concatenate((wave_sh, wave_lh))
 
     ws=(wave_sh > 15) & (wave_sh < 19.4) & (cont_sh==cont_sh)
@@ -637,7 +640,7 @@ noerror=False):
   out['flux']=flux
   out['cont']=cont
   out['orig']=orig
-  out['error']=error
+ # out['error']=error
 
   out=pd.DataFrame.from_dict(out)
 

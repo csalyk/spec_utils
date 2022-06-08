@@ -234,10 +234,14 @@ def spec_convol(wave, flux, dv, kernel=None):
         Convolved spectrum flux density values, in same units as input
     '''
 
+    if(kernel is not None):
+        dv=np.max(kernel['vel'])
+
     dv=fwhm_to_sigma(dv)  #Convert FWHM to sigma
-    n=round(4.*dv/(c.value*1e-3)*np.median(wave)/(wave[1]-wave[0]))   #Determine # of elements to use in kernel
-    if (n < 10):  #Set floor of 10 elements
-        n=10.
+
+    n=round(4.*dv/(c.value*1e-3)*np.median(wave)/(wave[1]-wave[0]))   #Determine # of elements to use in kernel. Looks like 4 pix per sigma.
+    if (n < 20):  #Set floor of size of kernel.  Actually has 2n+1 elements.
+        n=20.
 
 #Pad arrays to deal with edges
     dwave=wave[1]-wave[0]
@@ -261,17 +265,18 @@ def spec_convol(wave, flux, dv, kernel=None):
         print("Program will return an empty array")
 
     for i in np.arange(n, np.size(wave)-n+1):
-        lwave=wave[np.int(i-n):np.int(i+n+1)]
-        lflux=flux[np.int(i-n):np.int(i+n+1)]
-        lvel=(lwave-wave[np.int(i)])/wave[np.int(i)]*c.value*1e-3 
-        nvel=(np.max(lvel)-np.min(lvel))/(dv*.2) +3
-        vel=np.arange(nvel)
-        vel=.2*dv*(vel-np.median(vel))
+        lwave=wave[np.int(i-n):np.int(i+n+1)]  #Local wavelengths
+        lflux=flux[np.int(i-n):np.int(i+n+1)]  #Local fluxes
+        lvel=(lwave-wave[np.int(i)])/wave[np.int(i)]*c.value*1e-3 #Local velocities
         if(kernel is None):
-            mykernel=markgauss(vel,mean=0,sigma=dv,area=1.)
-            wkernel=np.interp(lvel,vel,mykernel)   #numpy interp is almost factor of 2 faster than interp1d
+#            nvel=(np.max(lvel)-np.min(lvel))/(dv*0.2) +3               #
+#            vel=np.arange(nvel)
+#            vel=0.2*dv*(vel-np.median(vel))  #Velocities on which to compute the well-sampled kernel values
+#            mykernel=markgauss(vel,mean=0,sigma=dv,area=1.)
+#            wkernel=np.interp(lvel,vel,mykernel)   #interpolate well-sampled kernel onto the local velocities
+            wkernel=markgauss(lvel,mean=0,sigma=dv,area=1.)  #Compute kernel values on local velocities
         if(kernel is not None):
-            wkernel=np.interp(lvel,kernel['vel'],kernel['flux'])
+            wkernel=np.interp(lvel,kernel['vel'],kernel['flux'])   #interpolate kernel onto the local velocities
         wkernel=wkernel/np.nansum(wkernel)
         newflux[np.int(i)]=np.nansum(lflux*wkernel)/np.nansum(wkernel[np.isfinite(lflux)])
         #Note: denominator is necessary to correctly account for NaN'd regions
@@ -398,7 +403,7 @@ def fit_irs_spline(wave, orig, sdfac=None):
 
 
 def read_irs(src_name, orderc=True, shflag=False, lhflag=False, silicate=False, ice=False,
-noerror=False):
+noerror=False,datadir=datadir):
 
   #Warning: This routine includes hardcoded fixes for some sources
 
@@ -407,7 +412,8 @@ noerror=False):
 
   #Hardcoded directory location
   #Eventually include an error catch here?
-  dd='/Users/csalyk/DATA/Spitzer/All/REDUCED/'
+  dd='/Users/cosalyk/DATA/Spitzer/All/REDUCED/'
+  if(datadir is not None): dd=datadir
 
   sherrflag=False
 #Read in SH part of spectrum

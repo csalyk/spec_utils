@@ -518,7 +518,7 @@ noerror=False,dd='/Users/cosalyk/DATA/Spitzer/All/REDUCED/'):
 #        if(src_name == 'IQTAU'):
 #            error=error[1:]
 
-      pdb.set_trace()
+#      pdb.set_trace()
       w=(spec == spec)   #Check for nan
       w2=(wave > 24) & (wave < 24.3)
       w3=(wave > 26.1) & (wave < 26.4)
